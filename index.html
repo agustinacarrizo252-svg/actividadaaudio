@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listening - El viaje de Natalia a la Patagonia</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', 'Segoe UI', sans-serif;
+  background: linear-gradient(180deg, #EEF4FB 0%, #FAFCFE 100%);
+  min-height: 100vh;
+  padding: 0 0 40px;
+}
+.container { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+.header {
+  background: #1B3A5C;
+  border-radius: 0 0 20px 20px;
+  padding: 28px 24px 22px;
+  margin-bottom: 20px;
+  color: white;
+}
+.header-label { font-size: 12px; letter-spacing: 3px; color: #75AADB; margin-bottom: 4px; font-weight: 700; }
+.header h1 { font-size: 22px; font-weight: 800; line-height: 1.2; margin-bottom: 4px; }
+.header p { font-size: 13px; color: #A8C8E8; font-style: italic; }
+.tabs {
+  display: flex; gap: 6px; margin-bottom: 16px;
+  background: white; border-radius: 12px; padding: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.tab-btn {
+  flex: 1; padding: 10px 8px; border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 500; font-family: inherit;
+  cursor: pointer; background: transparent; color: #6B7280;
+  transition: all 0.2s;
+}
+.tab-btn.active { background: #1B3A5C; color: white; font-weight: 700; }
+.card {
+  background: white; border-radius: 16px; padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px;
+}
+.play-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.play-btn {
+  width: 56px; height: 56px; border-radius: 50%; border: none;
+  background: #1B3A5C; color: white; font-size: 24px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.2s;
+  box-shadow: 0 3px 10px rgba(27,58,92,0.3);
+}
+.play-btn.playing { background: #EF4444; }
+.play-info h3 { font-size: 15px; font-weight: 700; color: #1B3A5C; margin-bottom: 4px; }
+.play-info span { font-size: 12px; color: #6B7280; }
+.speed-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.speed-label { font-size: 12px; color: #6B7280; margin-right: 4px; }
+.speed-btn {
+  padding: 6px 14px; border-radius: 8px; border: 1px solid #E5E7EB;
+  background: white; color: #6B7280; font-size: 12px; font-family: inherit;
+  cursor: pointer; font-weight: 400;
+}
+.speed-btn.active { border: 2px solid #1B3A5C; background: #EEF4FB; color: #1B3A5C; font-weight: 700; }
+.text-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.text-header span { font-size: 14px; font-weight: 700; color: #1B3A5C; }
+.toggle-btn {
+  padding: 6px 14px; border-radius: 8px; border: 1px solid #E5E7EB;
+  background: white; color: #6B7280; font-size: 12px; font-family: inherit;
+  cursor: pointer; font-weight: 600;
+}
+.toggle-btn.shown { background: #1B3A5C; color: white; border-color: #1B3A5C; }
+.text-content { font-size: 15px; line-height: 1.8; color: #1B3A5C; white-space: pre-line; }
+.text-locked {
+  padding: 24px; background: #F9FAFB; border-radius: 12px;
+  text-align: center; color: #9CA3AF; font-size: 13px;
+}
+.question-block {
+  margin-bottom: 20px; padding: 16px; background: #F9FAFB;
+  border-radius: 12px; border-left: 4px solid #75AADB;
+}
+.question-block.correct { border-left-color: #22C55E; }
+.question-block.wrong { border-left-color: #EF4444; }
+.question-text { font-size: 14px; font-weight: 700; color: #1B3A5C; margin-bottom: 10px; }
+.options { display: flex; flex-direction: column; gap: 6px; }
+.option-btn {
+  padding: 10px 14px; border-radius: 10px; border: 1px solid #E5E7EB;
+  background: white; color: #374151; font-size: 13px; font-family: inherit;
+  cursor: pointer; text-align: left; font-weight: 400; transition: all 0.15s;
+}
+.option-btn.selected { border: 2px solid #1B3A5C; background: #EEF4FB; color: #1B3A5C; font-weight: 600; }
+.option-btn.correct-answer { border: 2px solid #22C55E; background: #DCFCE7; color: #166534; font-weight: 600; }
+.option-btn.wrong-answer { border: 2px solid #EF4444; background: #FEE2E2; color: #991B1B; }
+.option-btn:disabled { cursor: default; }
+.action-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+.submit-btn {
+  padding: 12px 28px; border-radius: 12px; border: none;
+  background: #1B3A5C; color: white; font-size: 14px; font-weight: 700;
+  font-family: inherit; cursor: pointer;
+}
+.submit-btn:disabled { background: #D1D5DB; cursor: not-allowed; }
+.score-badge {
+  padding: 10px 20px; border-radius: 12px; font-size: 15px; font-weight: 700;
+}
+.score-perfect { background: #DCFCE7; color: #166534; }
+.score-partial { background: #FEF3C7; color: #92400E; }
+.retry-btn {
+  padding: 10px 20px; border-radius: 12px; border: 1px solid #E5E7EB;
+  background: white; font-size: 13px; font-family: inherit; cursor: pointer; color: #6B7280;
+}
+.blank-block {
+  margin-bottom: 14px; padding: 14px; background: #F9FAFB;
+  border-radius: 12px; border-left: 4px solid #E8A838;
+}
+.blank-block.correct { border-left-color: #22C55E; }
+.blank-block.wrong { border-left-color: #EF4444; }
+.blank-sentence { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 14px; color: #1B3A5C; }
+.blank-input {
+  width: 110px; padding: 6px 10px; border-radius: 8px;
+  border: 2px solid #E8A838; font-size: 14px; font-family: inherit;
+  font-weight: 600; text-align: center; background: white; outline: none;
+}
+.blank-input.correct { border-color: #22C55E; background: #DCFCE7; }
+.blank-input.wrong { border-color: #EF4444; background: #FEE2E2; }
+.blank-correct-answer { font-size: 12px; color: #22C55E; margin-top: 6px; font-weight: 600; }
+.blank-hint { font-size: 10px; color: #9CA3AF; margin-top: 4px; font-style: italic; }
+.listen-sentence-btn {
+  margin-top: 4px; padding: 3px 10px; border-radius: 6px;
+  border: 1px solid #E5E7EB; background: white; font-size: 11px;
+  font-family: inherit; cursor: pointer; color: #6B7280;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+h3 { margin: 0 0 6px; font-size: 16px; color: #1B3A5C; }
+.subtitle { margin: 0 0 16px; font-size: 12px; color: #6B7280; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-label">CLASE 1 — JULIA</div>
+    <h1>🎧 Ejercicio de Listening</h1>
+    <p>El viaje de Natalia a la Patagonia — Nivel A2</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('listen')">🎧 Escuchar</button>
+    <button class="tab-btn" onclick="switchTab('questions')">❓ Comprensión</button>
+    <button class="tab-btn" onclick="switchTab('blanks')">✏️ Completar</button>
+  </div>
+
+  <!-- TAB: LISTEN -->
+  <div id="tab-listen" class="tab-panel active">
+    <div class="card">
+      <div class="play-row">
+        <button id="playBtn" class="play-btn" onclick="togglePlay()">▶</button>
+        <div class="play-info">
+          <h3 id="playLabel">Escuchá el texto</h3>
+          <span>Podés escucharlo varias veces</span>
+        </div>
+      </div>
+      <div class="speed-row">
+        <span class="speed-label">Velocidad:</span>
+        <button class="speed-btn active" onclick="setSpeed(0, this)">Lento</button>
+        <button class="speed-btn" onclick="setSpeed(1, this)">Normal</button>
+        <button class="speed-btn" onclick="setSpeed(2, this)">Rápido</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="text-header">
+        <span>📄 Texto</span>
+        <button id="toggleTextBtn" class="toggle-btn" onclick="toggleText()">Mostrar</button>
+      </div>
+      <div id="textLocked" class="text-locked">🔒 Primero escuchá, después podés ver el texto</div>
+      <div id="textContent" class="text-content" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- TAB: QUESTIONS -->
+  <div id="tab-questions" class="tab-panel">
+    <div class="card">
+      <h3>Preguntas de comprensión</h3>
+      <div style="height:10px"></div>
+      <div id="questionsContainer"></div>
+      <div class="action-row" id="questionsActions"></div>
+    </div>
+  </div>
+
+  <!-- TAB: BLANKS -->
+  <div id="tab-blanks" class="tab-panel">
+    <div class="card">
+      <h3>Completá las frases del texto</h3>
+      <p class="subtitle">Escribí la palabra que falta</p>
+      <div id="blanksContainer"></div>
+      <div class="action-row" id="blanksActions"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TEXT = `Hola, me llamo Natalia y soy de Canadá. El año pasado viajé a Argentina por primera vez. Fui a la Patagonia con mi amiga Laura.
+
+Primero, llegamos a Buenos Aires. Buenos Aires es una ciudad muy grande y moderna. Hay muchos teatros, restaurantes y parques. El Obelisco está en el centro de la ciudad, en una avenida muy famosa.
+
+Después, tomamos un avión a Bariloche. Bariloche está en el sur de Argentina, cerca de la frontera con Chile. Es un lugar muy bonito y turístico. Hay lagos enormes y montañas con nieve. Fuimos a una heladería famosa y comimos helado de chocolate. ¡Estaba delicioso!
+
+Al final del viaje, visitamos el glaciar Perito Moreno. Está en la provincia de Santa Cruz, muy lejos de Buenos Aires. Es impresionante. El glaciar es enorme y el agua del lago es de color azul. Hay mucho silencio y naturaleza. Me encantó.
+
+Quiero volver a Argentina el próximo año. Me gustaría ir a las Cataratas del Iguazú y a Mendoza, porque hay viñedos y montañas hermosas.`;
+
+const QUESTIONS = [
+  { q: "¿De dónde es Natalia?", options: ["De Argentina", "De Canadá", "De Chile", "De España"], correct: 1 },
+  { q: "¿Cómo describe Buenos Aires?", options: ["Pequeña y tranquila", "Antigua y aburrida", "Grande y moderna", "Fría y turística"], correct: 2 },
+  { q: "¿Dónde está Bariloche?", options: ["En el norte de Argentina", "En el centro del país", "En el este, cerca del mar", "En el sur, cerca de Chile"], correct: 3 },
+  { q: "¿Qué hay en Bariloche?", options: ["Playas tropicales", "Lagos y montañas con nieve", "Selva y ríos", "Desierto y arena"], correct: 1 },
+  { q: "¿Dónde está el glaciar Perito Moreno?", options: ["En Buenos Aires", "En Bariloche", "En la provincia de Santa Cruz", "En Mendoza"], correct: 2 },
+  { q: "¿Adónde quiere ir Natalia en su próximo viaje?", options: ["A Chile y Brasil", "A Bariloche otra vez", "A las Cataratas y a Mendoza", "A Europa"], correct: 2 },
+];
+
+const BLANKS = [
+  { sentence: "Buenos Aires ___ una ciudad muy grande.", answer: "es", hint: "SER/ESTAR" },
+  { sentence: "El Obelisco ___ en el centro de la ciudad.", answer: "está", hint: "SER/ESTAR" },
+  { sentence: "Bariloche ___ en el sur de Argentina.", answer: "está", hint: "SER/ESTAR" },
+  { sentence: "El glaciar ___ enorme.", answer: "es", hint: "SER/ESTAR" },
+  { sentence: "Hay montañas con ___.", answer: "nieve", hint: "vocabulario" },
+  { sentence: "Comimos helado en una ___ famosa.", answer: "heladería", hint: "vocabulario" },
+];
+
+const SPEEDS = [0.7, 0.9, 1.1];
+let currentSpeed = 0;
+let isPlaying = false;
+let showText = false;
+let qAnswers = {};
+let qSubmitted = false;
+let bSubmitted = false;
+
+// Speech
+function getSpanishVoice() {
+  const voices = speechSynthesis.getVoices();
+  return voices.find(v => v.lang === 'es-AR') ||
+         voices.find(v => v.lang === 'es-MX') ||
+         voices.find(v => v.lang.startsWith('es')) ||
+         voices[0];
+}
+
+function togglePlay() {
+  if (isPlaying) {
+    speechSynthesis.cancel();
+    isPlaying = false;
+    document.getElementById('playBtn').textContent = '▶';
+    document.getElementById('playBtn').classList.remove('playing');
+    document.getElementById('playLabel').textContent = 'Escuchá el texto';
+  } else {
+    speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(TEXT);
+    const voice = getSpanishVoice();
+    if (voice) utt.voice = voice;
+    utt.lang = 'es-AR';
+    utt.rate = SPEEDS[currentSpeed];
+    utt.onstart = () => {
+      isPlaying = true;
+      document.getElementById('playBtn').textContent = '⏹';
+      document.getElementById('playBtn').classList.add('playing');
+      document.getElementById('playLabel').textContent = 'Reproduciendo...';
+    };
+    utt.onend = () => {
+      isPlaying = false;
+      document.getElementById('playBtn').textContent = '▶';
+      document.getElementById('playBtn').classList.remove('playing');
+      document.getElementById('playLabel').textContent = 'Escuchá el texto';
+    };
+    utt.onerror = utt.onend;
+    speechSynthesis.speak(utt);
+  }
+}
+
+function speakSentence(text) {
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  const voice = getSpanishVoice();
+  if (voice) utt.voice = voice;
+  utt.lang = 'es-AR';
+  utt.rate = 0.75;
+  speechSynthesis.speak(utt);
+}
+
+function setSpeed(idx, btn) {
+  currentSpeed = idx;
+  document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleText() {
+  showText = !showText;
+  const btn = document.getElementById('toggleTextBtn');
+  const locked = document.getElementById('textLocked');
+  const content = document.getElementById('textContent');
+  if (showText) {
+    content.textContent = TEXT;
+    content.style.display = 'block';
+    locked.style.display = 'none';
+    btn.textContent = 'Ocultar';
+    btn.classList.add('shown');
+  } else {
+    content.style.display = 'none';
+    locked.style.display = 'block';
+    btn.textContent = 'Mostrar';
+    btn.classList.remove('shown');
+  }
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const tabs = document.querySelectorAll('.tab-btn');
+  const idx = id === 'listen' ? 0 : id === 'questions' ? 1 : 2;
+  tabs[idx].classList.add('active');
+}
+
+// Questions
+function buildQuestions() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '';
+  QUESTIONS.forEach((q, qi) => {
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    block.id = 'qblock-' + qi;
+
+    let optionsHtml = q.options.map((opt, oi) => {
+      let cls = 'option-btn';
+      if (qSubmitted) {
+        if (oi === q.correct) cls += ' correct-answer';
+        else if (qAnswers[qi] === oi) cls += ' wrong-answer';
+      } else if (qAnswers[qi] === oi) {
+        cls += ' selected';
+      }
+      return `<button class="${cls}" onclick="selectAnswer(${qi}, ${oi})" ${qSubmitted ? 'disabled' : ''}>
+        ${String.fromCharCode(65 + oi)}) ${opt}${qSubmitted && oi === q.correct ? ' ✓' : ''}
+      </button>`;
+    }).join('');
+
+    block.innerHTML = `
+      <div class="question-text">${qi + 1}. ${q.q}</div>
+      <div class="options">${optionsHtml}</div>
+    `;
+
+    if (qSubmitted) {
+      if (qAnswers[qi] === q.correct) block.classList.add('correct');
+      else if (qAnswers[qi] !== undefined) block.classList.add('wrong');
+    }
+
+    container.appendChild(block);
+  });
+
+  const actions = document.getElementById('questionsActions');
+  if (!qSubmitted) {
+    const answered = Object.keys(qAnswers).length;
+    actions.innerHTML = `<button class="submit-btn" onclick="submitQuestions()" ${answered < QUESTIONS.length ? 'disabled' : ''}>Verificar respuestas</button>`;
+  } else {
+    const score = QUESTIONS.filter((q, i) => qAnswers[i] === q.correct).length;
+    const perfect = score === QUESTIONS.length;
+    actions.innerHTML = `
+      <div class="score-badge ${perfect ? 'score-perfect' : 'score-partial'}">${score} / ${QUESTIONS.length} ${perfect ? '🎉' : ''}</div>
+      <button class="retry-btn" onclick="retryQuestions()">Reintentar</button>
+    `;
+  }
+}
+
+function selectAnswer(qi, oi) {
+  if (qSubmitted) return;
+  qAnswers[qi] = oi;
+  buildQuestions();
+}
+
+function submitQuestions() {
+  qSubmitted = true;
+  buildQuestions();
+}
+
+function retryQuestions() {
+  qAnswers = {};
+  qSubmitted = false;
+  buildQuestions();
+}
+
+// Blanks
+function buildBlanks() {
+  const container = document.getElementById('blanksContainer');
+  container.innerHTML = '';
+  BLANKS.forEach((b, bi) => {
+    const parts = b.sentence.split('___');
+    const userVal = document.getElementById('blank-input-' + bi)?.value || '';
+    const isCorrect = userVal.trim().toLowerCase() === b.answer.toLowerCase();
+
+    const block = document.createElement('div');
+    block.className = 'blank-block';
+    if (bSubmitted) block.classList.add(isCorrect ? 'correct' : 'wrong');
+
+    let inputCls = 'blank-input';
+    if (bSubmitted) inputCls += isCorrect ? ' correct' : ' wrong';
+
+    const fullSentence = b.sentence.replace('___', b.answer);
+
+    block.innerHTML = `
+      <div class="blank-sentence">
+        <span>${parts[0]}</span>
+        <input type="text" id="blank-input-${bi}" class="${inputCls}" placeholder="..." value="${userVal}" ${bSubmitted ? 'readonly' : ''}>
+        <span>${parts[1] || ''}</span>
+      </div>
+      ${bSubmitted && !isCorrect ? `<div class="blank-correct-answer">Respuesta correcta: ${b.answer}</div>` : ''}
+      <div class="blank-hint">pista: ${b.hint}</div>
+      <button class="listen-sentence-btn" onclick="speakSentence('${fullSentence.replace(/'/g, "\\'")}')">🔊 Escuchar frase</button>
+    `;
+    container.appendChild(block);
+  });
+
+  const actions = document.getElementById('blanksActions');
+  if (!bSubmitted) {
+    actions.innerHTML = `<button class="submit-btn" onclick="submitBlanks()">Verificar</button>`;
+  } else {
+    const score = BLANKS.filter((b, i) => {
+      const input = document.getElementById('blank-input-' + i);
+      return input && input.value.trim().toLowerCase() === b.answer.toLowerCase();
+    }).length;
+    const perfect = score === BLANKS.length;
+    actions.innerHTML = `
+      <div class="score-badge ${perfect ? 'score-perfect' : 'score-partial'}">${score} / ${BLANKS.length} ${perfect ? '🎉' : ''}</div>
+      <button class="retry-btn" onclick="retryBlanks()">Reintentar</button>
+    `;
+  }
+}
+
+function submitBlanks() {
+  bSubmitted = true;
+  buildBlanks();
+}
+
+function retryBlanks() {
+  bSubmitted = false;
+  buildBlanks();
+}
+
+// Init
+speechSynthesis.onvoiceschanged = () => {};
+buildQuestions();
+buildBlanks();
+</script>
+</body>
+</html>
